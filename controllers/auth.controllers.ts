@@ -35,7 +35,7 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     const token = jwt.sign(
-      { userId: newUser._id },
+      { email: newUser.email, role: newUser.role },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "7d" }
     );
@@ -86,7 +86,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id },
+      { email: user.email, role: user.role },
       process.env.JWT_SECRET || "secret",
       { expiresIn: "7d" }
     );
@@ -135,7 +135,7 @@ export const checkAuth = async (req: Request, res: Response) => {
     }
 
     interface DecodedToken {
-      userId: string;
+      email: string;
       iat: number;
       exp: number;
     }
@@ -144,7 +144,8 @@ export const checkAuth = async (req: Request, res: Response) => {
       token,
       process.env.JWT_SECRET || "secret"
     ) as DecodedToken;
-    const user = await User.findById(decoded.userId);
+
+    const user = await User.findOne({ email: decoded.email });
     console.log(decoded);
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
